@@ -1,4 +1,4 @@
-name: Build and Release Rust App
+name: Build and Release
 
 on:
   push:
@@ -6,59 +6,74 @@ on:
       - main
 
 jobs:
-  build-and-release:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - aarch64-unknown-linux-gnu
+          - i686-pc-windows-gnu
+          - i686-pc-windows-msvc
+          - i686-unknown-linux-gnu
+          - x86_64-apple-darwin
+          - x86_64-pc-windows-gnu
+          - x86_64-pc-windows-msvc
+          - x86_64-unknown-linux-gnu
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          target: ${{ matrix.target }}
+          override: true
+
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release --target ${{ matrix.target }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/*
+
+  release:
+    needs: build
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Rust
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable  # Specify the desired Rust version here, e.g., "1.55.0"
+      - name: Download all artifacts
+        uses: actions/download-artifact@v2
 
-    - name: Build Rust app
-      run: cargo build --release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
 
-    - name: Archive Artifacts
-      run: |
-        mkdir artifacts
-        cp target/release/gh-issue-creator artifacts/
-        tar czvf gh-issue-creator.tar.gz artifacts/
-      working-directory: ${{ github.workspace }}
+      - name: Upload Release Asset for each target
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./aarch64-unknown-linux-gnu/release/*
+          asset_name: aarch64-unknown-linux-gnu.zip
+          asset_content_type: application/zip
 
-    - name: Set Git User Identity
-      run: |
-        git config user.email "yahyabutt2020@gmail.com"
-        git config user.name "yahya-gis"
-      working-directory: ${{ github.workspace }}
-
-    - name: Create Git Tag
-      run: git tag -a v1.0 -m "Release v1.0"  # Replace "v1.0" and the message with your version and release message
-      working-directory: ${{ github.workspace }}
-
-    - name: Push Git Tag
-      run: git push origin v1.0  # Replace "v1.0" with the same tag you created
-      env:
-        GITHUB_TOKEN: ${{ secrets.RELEASE }}
-
-    - name: Create Release
-      id: create_release
-      if: success()  # Add this line
-      uses: softprops/action-gh-release@v1
-      with:
-        files: ./gh-issue-creator.tar.gz
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-    - name: Get Release URL
-      id: release_url
-      run: |
-        echo "::set-output name=url::${{ steps.create_release.outputs.html_url }}"
-
-    - name: Display Release URL
-      run: |
-        echo "Release URL: ${{ steps.release_url.outputs.url }}"
