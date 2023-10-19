@@ -29,6 +29,12 @@ jobs:
         tar czvf gh-issue-creator.tar.gz artifacts/
       working-directory: ${{ github.workspace }}
 
+    - name: Set Git User Identity
+      run: |
+        git config user.email "yahyabutt2020@gmail.com"
+        git config user.name "yahya-gis"
+      working-directory: ${{ github.workspace }}
+
     - name: Create Git Tag
       run: git tag -a v1.0 -m "Release v1.0"  # Replace "v1.0" and the message with your version and release message
       working-directory: ${{ github.workspace }}
