@@ -25,11 +25,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set OpenSSL dummy values
-        run: |
-          echo "OPENSSL_LIB_DIR=/tmp" >> $GITHUB_ENV
-          echo "OPENSSL_INCLUDE_DIR=/tmp" >> $GITHUB_ENV
-
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -78,7 +73,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./aarch64-unknown-linux-gnu/release/*
-          asset_name: aarch64-unknown-linux-gnu.zip
+          asset_path: ./${{ matrix.target }}/release/*
+          asset_name: ${{ matrix.target }}.zip
           asset_content_type: application/zip
-
