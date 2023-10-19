@@ -49,7 +49,7 @@ jobs:
       if: success()  # Add this line
       uses: softprops/action-gh-release@v1
       with:
-        files: ./your_app_name.tar.gz
+        files: ./gh-issue-creator.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
