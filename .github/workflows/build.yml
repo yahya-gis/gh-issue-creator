@@ -46,11 +46,13 @@ jobs:
 
     - name: Create Release
       id: create_release
+      if: success()  # Add this line
       uses: softprops/action-gh-release@v1
       with:
-        files: ./gh-issue-creator.tar.gz
+        files: ./your_app_name.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
     - name: Get Release URL
       id: release_url
