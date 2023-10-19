@@ -42,7 +42,7 @@ jobs:
     - name: Push Git Tag
       run: git push origin v1.0  # Replace "v1.0" with the same tag you created
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.RELEASE }}
 
     - name: Create Release
       id: create_release
