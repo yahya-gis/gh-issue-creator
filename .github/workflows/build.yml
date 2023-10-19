@@ -59,4 +59,4 @@ jobs:
 
     - name: Display Release URL
       run: |
-        echo "Release URL is: ${{ steps.release_url.outputs.url }}"
+        echo "Release URL: ${{ steps.release_url.outputs.url }}"
