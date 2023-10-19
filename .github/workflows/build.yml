@@ -2,7 +2,8 @@ name: Build and Release
 
 on:
   push:
-    branches: [ main ]
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -72,6 +73,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./target/release/my_app
+          asset_path: ./target/release/gh-issue-creator
           asset_name: gh-issue-creator
           asset_content_type: application/octet-stream
