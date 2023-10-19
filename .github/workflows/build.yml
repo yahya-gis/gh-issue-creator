@@ -17,7 +17,6 @@ jobs:
       uses: actions-rs/toolchain@v1
       with:
         profile: minimal
-        toolchain: nightly
 
     - name: Build Rust app
       run: cargo build --release
@@ -29,6 +28,13 @@ jobs:
         tar czvf gh-issue-creator.tar.gz artifacts/
       working-directory: ${{ github.workspace }}
 
+    - name: Create Git Tag
+      run: git tag -a v1.0 -m "Release v1.0"  # Replace "v1.0" and the message with your version and release message
+      working-directory: ${{ github.workspace }}
+
+    - name: Push Git Tag
+      run: git push origin v1.0  # Replace "v1.0" with the same tag you created
+
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1
@@ -39,9 +45,9 @@ jobs:
 
     - name: Get Release URL
       id: release_url
-      run: echo "::set-output name=url::$(jq -r '.html_url' ${{ steps.create_release.outputs.response }})"
+      run: |
+        echo "::set-output name=url::${{ steps.create_release.outputs.html_url }}"
 
     - name: Display Release URL
       run: |
         echo "Release URL: ${{ steps.release_url.outputs.url }}"
-
