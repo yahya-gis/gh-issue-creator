@@ -17,6 +17,7 @@ jobs:
       uses: actions-rs/toolchain@v1
       with:
         profile: minimal
+        toolchain: stable  # Specify the desired Rust version here, e.g., "1.55.0"
 
     - name: Build Rust app
       run: cargo build --release
