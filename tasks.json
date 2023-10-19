@@ -1,0 +1,154 @@
+[
+    {
+        "title": "Task 6",
+        "description": {
+            "process_name": "Charging Process",
+            "version": "1.0",
+            "steps": [
+                {
+                    "id": "step_1",
+                    "name": "User Authentication",
+                    "type": "task",
+                    "action": "authenticateUser",
+                    "next": "step_2",
+                    "data": {
+                        "input": [
+                            "username",
+                            "password"
+                        ],
+                        "output": [
+                            "user_id",
+                            "auth_status"
+                        ]
+                    }
+                },
+                {
+                    "id": "step_2",
+                    "name": "Check Wallbox Availability",
+                    "type": "task",
+                    "action": "checkAvailability",
+                    "next": "decision_1",
+                    "data": {
+                        "input": [
+                            "user_id"
+                        ],
+                        "output": [
+                            "wallbox_id",
+                            "availability_status"
+                        ]
+                    }
+                }
+            ],
+            "decisions": [
+                {
+                    "id": "decision_1",
+                    "name": "Is Wallbox Available?",
+                    "type": "decision",
+                    "options": [
+                        {
+                            "condition": "available",
+                            "next": "step_3"
+                        },
+                        {
+                            "condition": "unavailable",
+                            "next": "end"
+                        }
+                    ],
+                    "data": {
+                        "input": [
+                            "availability_status"
+                        ],
+                        "output": []
+                    }
+                }
+            ],
+            "end": {
+                "id": "end",
+                "name": "End of Process",
+                "type": "end",
+                "data": {
+                    "input": [],
+                    "output": [
+                        "final_status"
+                    ]
+                }
+            }
+        }
+    },
+    {
+        "title": "Task 7",
+        "description": {
+            "process_name": "Charging Process",
+            "version": "1.0",
+            "steps": [
+                {
+                    "id": "step_1",
+                    "name": "User Authentication",
+                    "type": "task",
+                    "action": "authenticateUser",
+                    "next": "step_2",
+                    "data": {
+                        "input": [
+                            "username",
+                            "password"
+                        ],
+                        "output": [
+                            "user_id",
+                            "auth_status"
+                        ]
+                    }
+                },
+                {
+                    "id": "step_2",
+                    "name": "Check Wallbox Availability",
+                    "type": "task",
+                    "action": "checkAvailability",
+                    "next": "decision_1",
+                    "data": {
+                        "input": [
+                            "user_id"
+                        ],
+                        "output": [
+                            "wallbox_id",
+                            "availability_status"
+                        ]
+                    }
+                }
+            ],
+            "decisions": [
+                {
+                    "id": "decision_1",
+                    "name": "Is Wallbox Available?",
+                    "type": "decision",
+                    "options": [
+                        {
+                            "condition": "available",
+                            "next": "step_3"
+                        },
+                        {
+                            "condition": "unavailable",
+                            "next": "end"
+                        }
+                    ],
+                    "data": {
+                        "input": [
+                            "availability_status"
+                        ],
+                        "output": []
+                    }
+                }
+            ],
+            "end": {
+                "id": "end",
+                "name": "End of Process",
+                "type": "end",
+                "data": {
+                    "input": [],
+                    "output": [
+                        "final_status"
+                    ]
+                }
+            }
+        }
+    }
+]
