@@ -1,0 +1,46 @@
+name: Build and Release Rust App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+
+    - name: Build Rust app
+      run: cargo build --release
+
+    - name: Archive Artifacts
+      run: |
+        mkdir artifacts
+        cp target/release/gh-issue-creator artifacts/
+        tar czvf gh-issue-creator.tar.gz artifacts/
+      working-directory: ${{ github.workspace }}
+
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: ./gh-issue-creator.tar.gz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Get Release URL
+      id: release_url
+      run: echo "::set-output name=url::$(jq -r '.html_url' ${{ steps.create_release.outputs.response }})"
+
+    - name: Display Release URL
+      run: |
+        echo "Release URL: ${{ steps.release_url.outputs.url }}"
+

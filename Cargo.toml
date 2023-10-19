@@ -1,0 +1,15 @@
+[package]
+name = "gh-issue-creator"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dotenv = "0.15.0"
+env_logger = "0.10.0"
+log = "0.4.20"
+reqwest = { version = "0.11.22", features = ["json"] }
+serde = { version = "1.0.189", features = ["derive"] }
+serde_json = { version = "1.0.107", features = ["preserve_order"] }
+tokio = { version = "1.33.0", features = ["full"] }
