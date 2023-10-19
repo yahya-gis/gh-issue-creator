@@ -25,8 +25,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Install dependencies
-        run: sudo apt-get install libssl-dev
+      - name: Set OpenSSL dummy values
+        run: |
+          echo "OPENSSL_LIB_DIR=/tmp" >> $GITHUB_ENV
+          echo "OPENSSL_INCLUDE_DIR=/tmp" >> $GITHUB_ENV
 
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
