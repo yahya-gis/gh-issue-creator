@@ -1,4 +1,7 @@
-name: Publish
+name: Publish Release
+
+env:
+  APP_NAME: gh-issue-creator
 
 on:
   push:
@@ -7,29 +10,33 @@ on:
 
 jobs:
   publish:
-    name: Publish for ${{ matrix.os }}
+    name: Publish Release for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+
+    if: startsWith(github.ref, 'refs/tags/')
     strategy:
       matrix:
         include:
           - os: ubuntu-latest
-            artifact_name: gh-issue-creator
-            asset_name: gh-issue-creator-linux-amd64
+            target: x86_64-unknown-linux-gnu
           - os: windows-latest
-            artifact_name: gh-issue-creator.exe
-            asset_name: gh-issue-creator-windows-amd64
+            target: x86_64-pc-windows-msvc
           - os: macos-latest
-            artifact_name: gh-issue-creator
-            asset_name: gh-issue-creator-macos-amd64
+            target: x86_64-apple-darwin
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: cargo build --release
-    - name: Upload binaries to release
-      uses: svenstaro/upload-release-action@v2
-      with:
-        repo_token: ${{ secrets.GITHUB_TOKEN }}
-        file: target/release/${{ matrix.artifact_name }}
-        asset_name: ${{ matrix.asset_name }}
-        tag: ${{ github.ref }}
+
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Build Release
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Upload Release Asset
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+
+          file: target/${{ matrix.target }}/release/${{ env.APP_NAME }}
+          asset_name: ${{ env.APP_NAME }}-${{ matrix.target }}
+          tag: ${{ github.ref }}
