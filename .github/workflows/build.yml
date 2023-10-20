@@ -35,14 +35,13 @@ jobs:
       - name: Build Release
         run: cargo build --release
 
-      # Generate release notes from tag annotation
       - name: Generate release notes
         id: release_notes
         run: |
           RELEASE_NOTES=$(git tag -l --format='%(contents)' ${{ github.ref }})
           echo "$RELEASE_NOTES" > RELEASE_NOTES.md
+        shell: bash
 
-      # Upload the built binary as a release asset
       - name: Upload Release Asset
         uses: svenstaro/upload-release-action@v2
         with:
