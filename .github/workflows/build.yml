@@ -37,6 +37,17 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
 
-          file: target/${{ matrix.target }}/release/${{ env.APP_NAME }}
+          file: target/release/${{ env.APP_NAME }}
           asset_name: ${{ env.APP_NAME }}-${{ matrix.target }}
           tag: ${{ github.ref }}
+          body: |
+            # Release notes
+
+            ${{ steps.release_notes.outputs.notes }}
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          PREVIOUS_TAG=$(git describe --abbrev=0 --tags `git rev-list --tags --skip=1 --max-count=1`)
+          RELEASE_NOTES=$(git log --pretty=format:"- %s" $PREVIOUS_TAG..HEAD)
+          echo "::set-output name=notes::$RELEASE_NOTES"
