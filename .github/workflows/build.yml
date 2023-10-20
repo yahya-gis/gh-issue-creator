@@ -12,6 +12,8 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
         rust:
           - stable
+          - beta
+          - nightly
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -50,14 +52,19 @@ jobs:
           args: --release --all-features
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1.0.0
+        run: |
+          tag_name="${{ github.ref }}"
+          release_name="Release ${{ github.ref }}"
+          draft="false"
+          prerelease="false"
+
+          upload_url=$(curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Content-Type: application/json" -d "{\"tag_name\":\"$tag_name\",\"name\":\"$release_name\",\"draft\":$draft,\"prerelease\":$prerelease}" \
+            "https://api.github.com/repos/${{ github.repository }}/releases" | jq -r '.upload_url')
+
+          echo "upload_url=$upload_url" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
 
   upload-assets:
     needs: release
@@ -70,7 +77,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ env.upload_url }}
           asset_path: ./target/release/gh-issue-creator
           asset_name: gh-issue-creator
           asset_content_type: application/octet-stream
