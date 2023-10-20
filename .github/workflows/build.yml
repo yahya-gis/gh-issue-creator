@@ -1,4 +1,4 @@
-name: Build and Release
+name: Publish
 
 on:
   push:
@@ -6,76 +6,30 @@ on:
       - '*'
 
 jobs:
-  build:
+  publish:
+    name: Publish for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        rust:
-          - stable
-    runs-on: ${{ matrix.os }}
+        include:
+          - os: ubuntu-latest
+            artifact_name: gh-issue-creator
+            asset_name: gh-issue-creator-linux-amd64
+          - os: windows-latest
+            artifact_name: gh-issue-creator.exe
+            asset_name: gh-issue-creator-windows-amd64
+          - os: macos-latest
+            artifact_name: gh-issue-creator
+            asset_name: gh-issue-creator-macos-amd64
+
     steps:
-      - uses: actions/checkout@v2
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: ${{ matrix.rust }}
-          override: true
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --all-features
-      - name: Run tests
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --all-features
-
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-      - name: Build Release
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release --all-features
-      - name: Create Release
-        id: create_release
-        run: |
-          tag_name="${{ github.ref }}"
-          release_name="Release ${{ github.ref }}"
-          draft="false"
-          prerelease="false"
-
-          upload_url=$(curl -s -X POST -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            -H "Content-Type: application/json" -d "{\"tag_name\":\"$tag_name\",\"name\":\"$release_name\",\"draft\":$draft,\"prerelease\":$prerelease}" \
-            "https://api.github.com/repos/${{ github.repository }}/releases" | jq -r '.upload_url')
-
-          echo "upload_url=$upload_url" >> $GITHUB_ENV
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  upload-assets:
-    needs: release
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ env.upload_url }}
-          asset_path: ./target/release/gh-issue-creator
-          asset_name: gh-issue-creator
-          asset_content_type: application/octet-stream
+    - uses: actions/checkout@v3
+    - name: Build
+      run: cargo build --release
+    - name: Upload binaries to release
+      uses: svenstaro/upload-release-action@v2
+      with:
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        file: target/release/${{ matrix.artifact_name }}
+        asset_name: ${{ matrix.asset_name }}
+        tag: ${{ github.ref }}
