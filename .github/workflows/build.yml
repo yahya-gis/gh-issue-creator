@@ -18,11 +18,14 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
+            artifact_name: gh-issue-creator
+            asset_name: gh-issue-creator-linux-amd64
           - os: windows-latest
-            target: x86_64-pc-windows-msvc
+            artifact_name: gh-issue-creator.exe
+            asset_name: gh-issue-creator-windows-amd64
           - os: macos-latest
-            target: x86_64-apple-darwin
+            artifact_name: gh-issue-creator
+            asset_name: gh-issue-creator-macos-amd64
 
     steps:
 
@@ -32,22 +35,19 @@ jobs:
       - name: Build Release
         run: cargo build --release --target ${{ matrix.target }}
 
+      # Generate release notes from tag annotation
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          RELEASE_NOTES=$(git tag -l --format='%(contents)' ${{ github.ref }})
+          echo "$RELEASE_NOTES" > RELEASE_NOTES.md
+
+      # Upload the built binary as a release asset
       - name: Upload Release Asset
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-
-          file: target/release/${{ env.APP_NAME }}
-          asset_name: ${{ env.APP_NAME }}-${{ matrix.target }}
+          file: target/release/${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
-          body: |
-            # Release notes
-
-            ${{ steps.release_notes.outputs.notes }}
-
-      - name: Generate release notes
-        id: release_notes
-        run: |
-          PREVIOUS_TAG=$(git describe --abbrev=0 --tags `git rev-list --tags --skip=1 --max-count=1`)
-          RELEASE_NOTES=$(git log --pretty=format:"- %s" $PREVIOUS_TAG..HEAD)
-          echo "::set-output name=notes::$RELEASE_NOTES"
+          body_from_file: ./RELEASE_NOTES.md
